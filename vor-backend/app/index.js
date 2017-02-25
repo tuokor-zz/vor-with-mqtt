@@ -3,6 +3,12 @@ const Rx = require('rx');
 const Cache = require('app/cache');
 const viewRoute = require('app/views/routes');
 const views = require('app/views');
+const mqtt = require('mqtt');
+const mqttClient = mqtt.connect('mqtt://127.0.0.1');
+
+mqttClient.on('connect', function() {
+  mqttClient.subscribe('sensors/#');
+});
 
 module.exports = function (app, router, configs, sharedConfigs) {
 
@@ -44,6 +50,10 @@ module.exports = function (app, router, configs, sharedConfigs) {
   });
   app.use('/messages', postMessageRoute);
 
+  mqttClient.on('message', function(topic, message) {
+    console.log(message.toString());
+    postMessageSubject.onNext(JSON.parse(message.toString()));
+  });
   // set up cache storage
   const cache = new Cache(configs.CACHE_PREFIX, configs.CACHE_TTL);
 

@@ -1,6 +1,7 @@
 import signal
 import sys
 import time
+import json
 import paho.mqtt.client as mqtt
 from sense_hat import SenseHat
 
@@ -25,7 +26,16 @@ signal.signal(signal.SIGINT, sigterm_handler)
 client1.connect(broker_address)
 client1.loop_start()
 while True:
-    client1.publish("sensors/temp1", sense.get_temperature())
+    json_message = json.dumps(
+        {'id': 'room-1',
+        'type': 'room',
+        'reserved': True,
+        'temperature': sense.get_temperature(),
+        'light': 0,
+        'dioxide': 0,
+        'noise': 0
+        })
+    client1.publish("sensors/temp1", json_message)
     time.sleep(8)
 client1.disconnect()
 client1.loop_stop()
